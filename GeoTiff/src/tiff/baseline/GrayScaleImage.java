@@ -1,5 +1,7 @@
 package tiff.baseline;
 
+import java.awt.image.BufferedImage;
+import java.awt.image.WritableRaster;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 
@@ -200,6 +202,18 @@ public class GrayScaleImage extends BiLevelImage{
 			e.printStackTrace();
 		}
 		return false;
+	}
+	public BufferedImage getBufferedImage(){
+		BufferedImage bi = new BufferedImage( (int)imageWidth, (int)imageLength, BufferedImage.TYPE_BYTE_GRAY);
+		WritableRaster wr = bi.getRaster();
+		int[] data = new int[3];
+		
+		for( int row = 0; row < imageLength; row++)
+			for( int  col = 0; col < imageWidth; col++ ){
+				data[0] = pixel[row][col];
+				wr.setPixel(col, row, data);
+			}
+		return bi;
 	}
 	public void filter( double[][] mask, int size){
 		short[][] output = new short[(int) imageLength][(int) imageWidth];

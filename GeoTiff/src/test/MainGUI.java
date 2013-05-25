@@ -1,59 +1,39 @@
 package test;
 
-import java.applet.Applet;
+import java.awt.BorderLayout;
+import java.awt.Canvas;
+import java.awt.Dimension;
 import java.awt.Graphics;
+import java.awt.GridLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
-import java.awt.image.ImageObserver;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 
-import javax.imageio.ImageIO;
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JPanel;
 
 import tiff.baseline.GrayScaleImage;
 
-public class MainGUI extends Applet{
-	
-	RandomAccessFile  in;
-	RandomAccessFile  out;
-	String            in_path,out_path;
-	BufferedImage     bin;
-	BufferedImage     bout;
-	
-	public void init(){
-		in_path  = "C:\\Documents and Settings\\Administrator\\workspace\\GeoTiff\\src\\test\\input.tif";
-		out_path = "C:\\Documents and Settings\\Administrator\\workspace\\GeoTiff\\src\\test\\output.tif";
-		
-		double x = 1.0/9, y = 1.0,z = -1.0;
-		//This is Image Smoothing mask
-		double[][] lowpass =  { 
-								{ x, x, x}
-							   ,{ x, x, x}
-							   ,{ x, x, x}
-							  };
-		
-		//This is Laplacian mask
-		double[][] highpass = { 
-								{ y,   y, y}
-							   ,{ y, z*8, y}
-							   ,{ y,   y, y}
-							  };
-		
+public class MainGUI{
+	static RandomAccessFile  in;
+	static String            in_path;
+	static BufferedImage     bin;
+	public static JFrame jf;
+	public static void openImage(String path){
+		in_path = path;
 		try {
 			in  = new RandomAccessFile( new File(in_path) , "r" );
 		} catch (FileNotFoundException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		}
-		try {
-			out = new RandomAccessFile( new File("out_path"), "rw");
-		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		
+		}		
 		GrayScaleImage gi = new GrayScaleImage();
+		
 		try {
 			gi.decode( in );
 		} catch (IOException e) {
@@ -62,14 +42,43 @@ public class MainGUI extends Applet{
 		}
 		gi.readPixels( in );
 		
-		try {
-			bin  = ImageIO.read( new File(  in_path  ) );
-			bout = ImageIO.read( new File( out_path ) );
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		bin  = gi.getBufferedImage();
+		jf.add( "Center", new TiffCanvas( bin ));
+		jf.setSize( new Dimension( bin.getWidth(),bin.getHeight()+ 20 ) );
 	}
-	public void paint(Graphics g){
+	static class TiffCanvas extends Canvas
+	{
+		BufferedImage bi;
+		TiffCanvas(BufferedImage bi){
+			this.bi = bi;  
+		}
+	    public void paint(Graphics g)
+	    {
+	        g.drawImage( bi, 0, 0, null);
+	    }
+	}
+
+	public static void main(String args[]){
+		jf = new JFrame("GeoTIFF GUI");
+		JPanel jp = new JPanel();
+		JButton openBtn = new JButton("OPEN");
+		openBtn.setSize( 20, 40);
+		openBtn.addActionListener( new ActionListener(){
+
+			@Override
+			public void actionPerformed(ActionEvent ae) {
+				openImage( "src/test/input.tif" );
+			}
+		});
+		JButton selectBtn = new JButton("SELECT");
+		selectBtn.setSize( 20, 40);
+		jp.setLayout(new GridLayout(1,2));
+		jp.add(openBtn);
+		jp.add(selectBtn);
+		
+		jf.add(BorderLayout.NORTH, jp);
+		jf.setSize( new Dimension( 200, 60 ));
+		jf.setVisible( true );
 	}
 }
+

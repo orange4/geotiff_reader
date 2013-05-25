@@ -1,5 +1,4 @@
 package tiff;
-
-public class BaseLineImage {
+public class BaseLineImage{
 	
 }
