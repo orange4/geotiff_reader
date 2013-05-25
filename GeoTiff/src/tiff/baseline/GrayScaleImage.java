@@ -74,46 +74,46 @@ public class GrayScaleImage extends BiLevelImage{
 	    
 	    	case 256:
 	    		imageWidth = valueOffset; 
-	    		keep.log("Width : "+valueOffset);
+	    		log.append("Width : "+valueOffset);
 	    		break;
 	    		
 	    	case 257:
 	    		imageLength = valueOffset;
-	    		keep.log("Length : "+valueOffset);
+	    		log.append("Length : "+valueOffset);
 	    		break;
 	    	
 	    	case 258:
 	    		bitsPerSample = (int) valueOffset;
-	    		keep.log("Bits Per Sample : "+valueOffset);
+	    		log.append("Bits Per Sample : "+valueOffset);
 	    		break;
 	    	case 259:
 	    		compression = (int) valueOffset;
-	    		keep.log("Compression : "+valueOffset);
+	    		log.append("Compression : "+valueOffset);
 	    		break;
 	    	
 	    	case 262:
 	    		photometricInterpretation = (int) valueOffset;
-	    		keep.log("Photometric Interpretation : "+valueOffset);
+	    		log.append("Photometric Interpretation : "+valueOffset);
 	    		break;
 	    	
 	    	case 273:
 	    		stripOffsets = new long[ (int) valueCount ];
 	    		buffer = new byte[Types.DATATYPE[datatype]];
 	    		fstream.seek(valueOffset);
-	    		keep.log("Strip Offsets Count :  "+valueCount);
+	    		log.append("Strip Offsets Count :  "+valueCount);
 	    	    for(int i = 0; i < valueCount; i++ ){
 	    	    	fstream.read(buffer);
 	    	    	stripOffsets[i] = (long) Types.getObject(buffer, 0, datatype, byteOrder);
-	    	    	keep.log("Offset "+i+" : "+stripOffsets[i]);
+	    	    	log.append("Offset "+i+" : "+stripOffsets[i]);
 	    	    }
 	    		break;
 	    	case 278:
 	    		rowsPerStrip = (long) valueOffset;
-	    		keep.log("Rows Per Strip : "+valueOffset);
+	    		log.append("Rows Per Strip : "+valueOffset);
 	    		break;
 	    	case 279:
 	    		stripByteCounts = new long[ (int) valueCount ];
-	    		keep.log("Strip Byte Count : "+valueCount);
+	    		log.append("Strip Byte Count : "+valueCount);
 	    		
 	    		buffer = new byte[Types.DATATYPE[datatype]];
 	    		fstream.seek(valueOffset);
@@ -121,7 +121,7 @@ public class GrayScaleImage extends BiLevelImage{
 	    	    for(int i = 0; i < valueCount; i++ ){
 	    	    	fstream.read(buffer);
 	    	    	stripByteCounts[i] = (long) Types.getObject(buffer, 0, datatype, byteOrder);
-	    	    	keep.log("Strip Byte Count "+i+" : "+stripByteCounts[i]);
+	    	    	log.append("Strip Byte Count "+i+" : "+stripByteCounts[i]);
 	    	    }
 	    		break;
 	    	case 282:
@@ -129,21 +129,21 @@ public class GrayScaleImage extends BiLevelImage{
 	    		fstream.seek(valueOffset);
 	    		fstream.read(buffer);
 	    		xResolution =  Types.getRational(buffer, 0, byteOrder);
-	    		keep.log("X Resolution : "+xResolution);
+	    		log.append("X Resolution : "+xResolution);
 	    		break;
 	    	case 283:
 	    		buffer = new byte[Types.DATATYPE[datatype]];
 	    		fstream.seek(valueOffset);
 	    		fstream.read(buffer);
 	    		yResolution =  Types.getRational(buffer, 0, byteOrder);
-	    		keep.log("Y Resolution : "+yResolution);
+	    		log.append("Y Resolution : "+yResolution);
 	    		break;
 	    	case 296:
 	    		resolutionUnit = valueOffset;
-	    		keep.log("Resolution Unit : "+valueOffset);
+	    		log.append("Resolution Unit : "+valueOffset);
 	    		break;
 	    	default:
-	    		keep.log("Unknown Tag Found : "+tag);
+	    		log.append("Unknown Tag Found : "+tag);
 	    	}
 		}
 		return true;
@@ -170,7 +170,7 @@ public class GrayScaleImage extends BiLevelImage{
 		return true;
 	}
 	public boolean readPixels(RandomAccessFile fstream){			
-		keep.log("Reading Pixel Data");
+		log.append("Reading Pixel Data");
 		int buffersize = 0;
 		
 		int row = 0, col = 0,c = 1;
@@ -179,7 +179,7 @@ public class GrayScaleImage extends BiLevelImage{
 		pixel = new short[(int) imageLength][(int)imageWidth]; //allocate the 2d pixel array
 		try{
 		for(int offset = 0; offset < stripOffsets.length; offset++){
-			keep.log("Offset : "+offset);
+			log.append("Offset : "+offset);
 			
 			//move file pointer to address of current strip
 			fstream.seek((int)stripOffsets[offset]);

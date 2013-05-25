@@ -14,6 +14,7 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 
 import javax.swing.JButton;
+import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 
@@ -23,7 +24,10 @@ public class MainGUI{
 	static RandomAccessFile  in;
 	static String            in_path;
 	static BufferedImage     bin;
-	public static JFrame jf;
+	static JFrame jf;
+	static TiffCanvas canvas;
+	static final JFileChooser fc  = new JFileChooser();
+	
 	public static void openImage(String path){
 		in_path = path;
 		try {
@@ -43,36 +47,35 @@ public class MainGUI{
 		gi.readPixels( in );
 		
 		bin  = gi.getBufferedImage();
-		jf.add( "Center", new TiffCanvas( bin ));
+		canvas.drawImage( bin );
 		jf.setSize( new Dimension( bin.getWidth(),bin.getHeight()+ 20 ) );
 	}
-	static class TiffCanvas extends Canvas
-	{
-		BufferedImage bi;
-		TiffCanvas(BufferedImage bi){
-			this.bi = bi;  
-		}
-	    public void paint(Graphics g)
-	    {
-	        g.drawImage( bi, 0, 0, null);
-	    }
-	}
-
 	public static void main(String args[]){
 		jf = new JFrame("GeoTIFF GUI");
 		JPanel jp = new JPanel();
+		canvas = new TiffCanvas();
+		jf.add("Center" , canvas);
+		
+		jp.setLayout(new GridLayout(1,2));
+		
 		JButton openBtn = new JButton("OPEN");
 		openBtn.setSize( 20, 40);
 		openBtn.addActionListener( new ActionListener(){
 
 			@Override
 			public void actionPerformed(ActionEvent ae) {
-				openImage( "src/test/input.tif" );
+				//openImage( "src/test/input.tif" );
+				int val = fc.showOpenDialog( jf );
+				if( val == JFileChooser.APPROVE_OPTION ){
+					openImage ( fc.getSelectedFile().getAbsolutePath() );
+				}else{
+					
+				}
 			}
 		});
+		
 		JButton selectBtn = new JButton("SELECT");
 		selectBtn.setSize( 20, 40);
-		jp.setLayout(new GridLayout(1,2));
 		jp.add(openBtn);
 		jp.add(selectBtn);
 		
@@ -80,5 +83,18 @@ public class MainGUI{
 		jf.setSize( new Dimension( 200, 60 ));
 		jf.setVisible( true );
 	}
+}
+class TiffCanvas extends Canvas
+{
+	BufferedImage bi;
+	public void drawImage( BufferedImage bi ){
+		this.bi = bi;
+		this.repaint();
+	}
+	TiffCanvas(){}
+    public void paint(Graphics g)
+    {
+        g.drawImage( bi, 0, 0, null);
+    }
 }
 
