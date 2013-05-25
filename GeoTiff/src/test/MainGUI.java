@@ -5,8 +5,12 @@ import java.awt.Canvas;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.GridLayout;
+import java.awt.Polygon;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.awt.event.MouseMotionListener;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -27,6 +31,8 @@ public class MainGUI{
 	static JFrame jf;
 	static TiffCanvas canvas;
 	static final JFileChooser fc  = new JFileChooser();
+	static Polygon selectedBoundry;
+	static boolean select;
 	
 	public static void openImage(String path){
 		in_path = path;
@@ -54,6 +60,60 @@ public class MainGUI{
 		jf = new JFrame("GeoTIFF GUI");
 		JPanel jp = new JPanel();
 		canvas = new TiffCanvas();
+		canvas.addMouseListener(new MouseListener(){
+
+			@Override
+			public void mouseClicked(MouseEvent me) {
+				// TODO Auto-generated method stub
+				
+			}
+
+			@Override
+			public void mouseEntered(MouseEvent me) {
+				// TODO Auto-generated method stub
+				
+			}
+
+			@Override
+			public void mouseExited(MouseEvent me) {
+				// TODO Auto-generated method stub
+				
+			}
+
+			@Override
+			public void mousePressed(MouseEvent me) {
+				// TODO Auto-generated method stub
+				if(select){		
+					selectedBoundry = new Polygon();
+					selectedBoundry.addPoint( me.getX() , me.getY());
+				}
+			}
+
+			@Override
+			public void mouseReleased(MouseEvent me) {
+				// TODO Auto-generated method stub
+				if(select)	canvas.getGraphics().drawPolygon( selectedBoundry );
+				select = false;
+				//canvas.repaint();
+			}
+			
+		});
+		canvas.addMouseMotionListener(new MouseMotionListener(){
+
+			@Override
+			public void mouseDragged(MouseEvent me) {
+				// TODO Auto-generated method stub
+				if(select) selectedBoundry.addPoint( me.getX() , me.getY());
+			}
+
+			@Override
+			public void mouseMoved(MouseEvent arg0) {
+				// TODO Auto-generated method stub
+				
+			}
+		});
+		
+		
 		jf.add("Center" , canvas);
 		
 		jp.setLayout(new GridLayout(1,2));
@@ -75,6 +135,23 @@ public class MainGUI{
 		});
 		
 		JButton selectBtn = new JButton("SELECT");
+		selectBtn.addActionListener(new ActionListener(){
+
+			@Override
+			public void actionPerformed(ActionEvent ae) {
+				// TODO Auto-generated method stub
+				
+				select = true;
+				
+				if( selectedBoundry != null ){
+					canvas.repaint( selectedBoundry.getBounds().x,
+							selectedBoundry.getBounds().y,
+							selectedBoundry.getBounds().width+1,
+							selectedBoundry.getBounds().height+1);
+					selectedBoundry = null;
+				}
+			}
+		});
 		selectBtn.setSize( 20, 40);
 		jp.add(openBtn);
 		jp.add(selectBtn);
@@ -91,7 +168,6 @@ class TiffCanvas extends Canvas
 		this.bi = bi;
 		this.repaint();
 	}
-	TiffCanvas(){}
     public void paint(Graphics g)
     {
         g.drawImage( bi, 0, 0, null);
