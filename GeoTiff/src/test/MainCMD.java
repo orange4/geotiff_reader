@@ -24,18 +24,18 @@ public class MainCMD {
 							   ,{ y,   y, y}
 							  };
 		
-		RandomAccessFile  in  = new RandomAccessFile( new File( "src/test/ceain.TIF") , "r" );
-		RandomAccessFile  out = new RandomAccessFile( new File("src/test/ceaout.TIF"), "rw");
+		File in = new File( "src/test/ceain.TIF" );
+		File out = new File("src/test/ceaout.TIF");
 		
-		GrayScaleImage gi = new GrayScaleImage();
-		gi.decode( in );
-		gi.readPixels( in );
+		GrayScaleImage gi = new GrayScaleImage( );
+//		gi.decode( in );
+//		gi.readPixels( in );
+//		
+//		gi.filter(lowpass, 3);
+//		gi.filter(lowpass, 3);
+//		
+//		gi.filter(highpass, 3);
 		
-		gi.filter(lowpass, 3);
-		gi.filter(lowpass, 3);
-		
-		gi.filter(highpass, 3);
-		
-		gi.writePixels( out );
+//		gi.writePixels( out );
 	}
 }

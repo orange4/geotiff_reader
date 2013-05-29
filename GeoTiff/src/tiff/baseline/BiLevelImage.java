@@ -1,6 +1,9 @@
 package tiff.baseline;
 
+import java.awt.image.BufferedImage;
+import java.awt.image.WritableRaster;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 
@@ -10,21 +13,38 @@ import utils.Types;
 
 public class BiLevelImage extends BaseLineImage{
 	LogCat log = new LogCat();
+	BiLevelImage(){}
+	BiLevelImage(File input) throws FileNotFoundException, IOException{
+		RandomAccessFile fstream = new RandomAccessFile( input, "rw" );
+		decode( fstream );
+		
+		image = new BufferedImage( 	BufferedImage.TYPE_BYTE_BINARY,
+				(int) imageLength,
+				(int) imageWidth,
+				null
+				);
+		
+		readPixels( fstream );
+	}
+	public BufferedImage getImage() {
+		return image;
+	}
 	//Pixel Data
-	short[][] pixel;
+	BufferedImage image;
+	
 	//Fields Required in BiLevel Image are as Follows 
 	
 	//Color
 		//	PhotometricInterpretation
 		//	Tag = 262  (106.H)
 		//	Type = SHORT
-		protected int photometricInterpretation;
+	protected int photometricInterpretation;
 
 	//Compression
 		//	Compression
 		//	Tag = 259  (103.H)
 		//	Type = SHORT
-		protected int compression;
+	protected int compression;
 		
 	//Rows and Columns
 		//	ImageLength
@@ -35,13 +55,13 @@ public class BiLevelImage extends BaseLineImage{
 		//	Tag = 256  (100.H)
 		//	Type = SHORT or LONG
 		//	The number of columns in the image, i.e., the number of pixels per scanline.
-		protected long imageLength,imageWidth;
+	protected long imageLength,imageWidth;
 
 	//Physical Dimensions
 		//	ResolutionUnit
 		//	Tag = 296 (128.H)
 		//	Type = SHORT
-		protected long resolutionUnit;
+	protected long resolutionUnit;
 		
 		//	XResolution
 		//	Tag = 282  (11A.H)
@@ -49,37 +69,37 @@ public class BiLevelImage extends BaseLineImage{
 		//	YResolution
 		//	Tag = 283  (11B.H)
 		//	Type = RATIONAL
-		protected double xResolution;
-		protected double yResolution;
+	protected double xResolution;
+	protected double yResolution;
 		
 	//Location of Data
 		//	RowsPerStrip
 		//	Tag = 278  (116.H)
 		//	Type = SHORT or LONG
 		//	The number of rows in each strip (except possibly the last strip.)
-		protected long rowsPerStrip;
+	protected long rowsPerStrip;
 		
 		//	StripOffsets
 		//	Tag = 273  (111.H)
 		//	Type = SHORT or LONG
 		//	For each strip, the byte offset of that strip.
-		protected long stripOffsets[];
+	protected long stripOffsets[];
 		
 		//	StripByteCounts
 		//	Tag = 279  (117.H)
 		//	Type = SHORT or LONG
 		//	For each strip, the number of bytes in that strip after any compression .
-		protected long stripByteCounts[];	
+	protected long stripByteCounts[];	
 		
-		//	decode Method Read Tiff Image from File
-		public boolean decode(RandomAccessFile fstream) throws IOException{
-			boolean byteOrder = false;
-			int 	version;
-			long 	IFDOffset;
+	//	decode Method Read Tiff Image from File
+	public boolean decode(RandomAccessFile fstream) throws IOException{
+			boolean	byteOrder  = false;
+			int		version;
+			long	IFDOffset;
+			byte[]	buffer = new byte[8];
+			int		fieldCount = 0; // count stores no. of fields in directory
 			
-	// Read Header from FileInputStream
-			byte[] buffer = new byte[8];
-			fstream.read( buffer);
+			fstream.read( buffer);	// Read Header from FileInputStream
 
 			//read Byte Order
 			if(buffer[0]==0x49&&buffer[0]==buffer[1]){
@@ -90,42 +110,43 @@ public class BiLevelImage extends BaseLineImage{
 			}
 			
 			//read Version
-			version  = Types.getShort( buffer, 2, byteOrder);
+			version   = Types.getShort( buffer, 2, byteOrder);
 			
 			//read IFD Offset
 			IFDOffset = Types.getLong( buffer, 4, byteOrder);
 			
 
-	// Read IFD Contents
-			// count stores no. of fields in directory	
-			int fieldCount = 0;
+	// Read IFD Contents		
 			
-			fstream.seek(IFDOffset);
+			fstream.seek(IFDOffset); // Move File Pointer to Address of first IFD
+			
 			buffer = new byte[2];
-			fstream.read(buffer);
+			fstream.read(buffer);	// Read the count of fields in IFD
 			
-			fieldCount = Types.getShort( buffer, 0, byteOrder);
+			fieldCount = Types.getShort( buffer, 0, byteOrder); // decode the buffer
 			
-			long filePointer = fstream.getFilePointer();
+			long filePointer = fstream.getFilePointer(); // Store the File Pointer
 	// Read Field Content
-			int		     tag,
-			        datatype;
-			long  valueCount,
-			     valueOffset;
+			
+			int		tag;
+			int		datatype;
+			long	valueCount;
+			long	valueOffset;
 			
 			for( int index = 0; index < fieldCount; index++){
 				buffer = new byte[12];
 				
-				fstream.seek(filePointer);
-				fstream.read(buffer);
-				filePointer = fstream.getFilePointer();
+				fstream.seek(filePointer); // seek filePointer to current Field
+				fstream.read(buffer);		// Read the Field
+				filePointer = fstream.getFilePointer(); // Store the FilePointer
 				
-				tag 		= Types.getShort(buffer, 0, byteOrder);
-		    	datatype 	= Types.getShort(buffer, 2, byteOrder);
-		    	valueCount 	= Types.getLong (buffer, 4, byteOrder);
-		    	valueOffset = Types.getLong	(buffer, 8, byteOrder);
+				tag 		= Types.getShort(buffer, 0, byteOrder);//Read Tag
+		    	datatype 	= Types.getShort(buffer, 2, byteOrder);//Read Datatype
+		    	valueCount 	= Types.getLong (buffer, 4, byteOrder);//Read Count
+		    	valueOffset = Types.getLong	(buffer, 8, byteOrder);//Read ValueOffset
 		    
-		    	switch( tag ){
+		    	
+		    	switch( tag ){ // store the corresponding field of BiLevelImage depending on tag
 		    
 		    	case 256:
 		    		imageWidth = valueOffset; 
@@ -201,12 +222,11 @@ public class BiLevelImage extends BaseLineImage{
 		}
 		public boolean readPixels(RandomAccessFile fstream) throws IOException{			
 			log.append("Reading Pixel Data");
-			int buffersize = 0;
-			
-			int row = 0, col = 0;
-			
-			if(buffersize == 0) buffersize = 1; //buffer size is minimum one byte
-			pixel = new short[(int) imageWidth][(int)imageLength]; //allocate the 2d pixel array
+			int buffersize = 1;//buffer size is minimum one byte
+			int row = 0;
+			int	col = 0;
+//			short[][]	pixel = new short[(int) imageWidth][(int)imageLength]; //allocate the 2d pixel array; 
+			WritableRaster wr = image.getRaster();
 			
 			for(int offset = 0; offset < stripOffsets.length; offset++){
 				log.append("Offset : "+offset);
@@ -219,16 +239,18 @@ public class BiLevelImage extends BaseLineImage{
 				int count_max = (int) stripByteCounts[offset];//how much bytes we have to read from above offset i.e size of strip
 				
 				if(offset+1 < stripOffsets.length){
-					count_max = (int) (imageLength % rowsPerStrip);
+					count_max = (int) (imageLength % rowsPerStrip);//if last strip
 				}
+				
 				for(int count = 0 ; count < count_max ; count++){
-					fstream.read(buffer);
-					row = (int) (count / imageLength);
-					col = (int) (count % imageLength);
-					pixel [row][col] = (short) (buffer[0] & 0xff);
-					System.out.print(pixel[row][col]+" ");
+					fstream.read(buffer);	// Read Each Pixel Data From file into Buffer
+					row = (int) (count / imageLength); // compute the x co-ordinate of pixel
+					col = (int) (count % imageLength); // compute the y co-ordinate of pixel
+					wr.setSample(col, row, 0, (buffer[0] & 0xff)); //set the Sample/Pixel as read Value
+//					pixel [row][col] = (short) (buffer[0] & 0xff);
+//					log.append(pixel[row][col]+" ");
 				}
-				System.out.println();
+				log.append("");
 			}
 			return false;
 		}

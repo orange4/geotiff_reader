@@ -23,9 +23,10 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 
 import tiff.baseline.GrayScaleImage;
+import tiff.baseline.RGBImage;
 
 public class MainGUI{
-	static RandomAccessFile  in;
+	static File  in;
 	static String            in_path;
 	static BufferedImage     bin;
 	static JFrame jf;
@@ -34,25 +35,12 @@ public class MainGUI{
 	static Polygon selectedBoundry;
 	static boolean select;
 	
-	public static void openImage(String path){
+	public static void openImage(String path) throws FileNotFoundException, IOException{
 		in_path = path;
-		try {
-			in  = new RandomAccessFile( new File(in_path) , "r" );
-		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}		
-		GrayScaleImage gi = new GrayScaleImage();
-		
-		try {
-			gi.decode( in );
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		gi.readPixels( in );
-		
-		bin  = gi.getBufferedImage();
+		in  = new File(in_path);		
+//		GrayScaleImage gi = new GrayScaleImage( in );//to open GrayScale Image
+		RGBImage gi = new RGBImage( in ) ; // top open RGBImage 
+		bin  = gi.getImage();
 		canvas.drawImage( bin );
 		jf.setSize( new Dimension( bin.getWidth(),bin.getHeight()+ 20 ) );
 	}
@@ -127,7 +115,15 @@ public class MainGUI{
 				//openImage( "src/test/input.tif" );
 				int val = fc.showOpenDialog( jf );
 				if( val == JFileChooser.APPROVE_OPTION ){
-					openImage ( fc.getSelectedFile().getAbsolutePath() );
+					try {
+						openImage ( fc.getSelectedFile().getAbsolutePath() );
+					} catch (FileNotFoundException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
 				}else{
 					
 				}

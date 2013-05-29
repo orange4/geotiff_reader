@@ -1,6 +1,15 @@
 package tiff.baseline;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+
 public class PaletteColorImage extends GrayScaleImage{
+	public PaletteColorImage(File input) throws FileNotFoundException,
+			IOException {
+		// TODO Auto-generated constructor stub
+	}
+
 	//	ColorMap
 	//	Tag = 320 (140.H)
 	//	Type = SHORT
