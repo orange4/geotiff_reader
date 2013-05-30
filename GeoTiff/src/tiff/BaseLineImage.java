@@ -1,7 +1,7 @@
 package tiff;
 
 public class BaseLineImage{
-	/*
+	/**
 	 PlanarConfiguration
 		How the components of each pixel are stored.
 			Tag = 284  (11C.H)
@@ -26,4 +26,5 @@ public class BaseLineImage{
 		Default is 1. See also BitsPerSample, SamplesPerPixel
 	 */
 	protected int planerConfiguration;
+	
 }

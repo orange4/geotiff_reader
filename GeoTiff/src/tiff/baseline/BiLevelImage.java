@@ -91,7 +91,7 @@ public class BiLevelImage extends BaseLineImage{
 		//	For each strip, the number of bytes in that strip after any compression .
 	protected long stripByteCounts[];	
 		
-	//	decode Method Read Tiff Image from File
+	//	decode Method Reads Tiff Image from File
 	public boolean decode(RandomAccessFile fstream) throws IOException{
 			boolean	byteOrder  = false;
 			int		version;
@@ -244,8 +244,8 @@ public class BiLevelImage extends BaseLineImage{
 				
 				for(int count = 0 ; count < count_max ; count++){
 					fstream.read(buffer);	// Read Each Pixel Data From file into Buffer
-					row = (int) (count / imageLength); // compute the x co-ordinate of pixel
-					col = (int) (count % imageLength); // compute the y co-ordinate of pixel
+					row = (int) (count / imageWidth); // compute the x co-ordinate of pixel
+					col = (int) (count % imageWidth); // compute the y co-ordinate of pixel
 					wr.setSample(col, row, 0, (buffer[0] & 0xff)); //set the Sample/Pixel as read Value
 //					pixel [row][col] = (short) (buffer[0] & 0xff);
 //					log.append(pixel[row][col]+" ");

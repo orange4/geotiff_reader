@@ -27,14 +27,14 @@ public class MainCMD {
 		File in = new File( "src/test/ceain.TIF" );
 		File out = new File("src/test/ceaout.TIF");
 		
-		GrayScaleImage gi = new GrayScaleImage( );
+		GrayScaleImage gi = new GrayScaleImage( in );
 //		gi.decode( in );
 //		gi.readPixels( in );
 //		
-//		gi.filter(lowpass, 3);
-//		gi.filter(lowpass, 3);
-//		
-//		gi.filter(highpass, 3);
+		gi.filter(lowpass, true);
+		gi.filter(lowpass, true);
+		
+		gi.filter(highpass,true);
 		
 //		gi.writePixels( out );
 	}

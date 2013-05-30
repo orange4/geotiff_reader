@@ -257,7 +257,7 @@ public class GrayScaleImage extends BiLevelImage{
 		int buffersize = 1;
 		int row = 0, col = 0,c = 1;
 //		short[][] pixel = new short[(int) imageLength][(int)imageWidth]; //allocate the 2d pixel array
-		WritableRaster wr = image.getRaster();
+		WritableRaster inputRaster = image.getRaster();
 		try{
 		for(int offset = 0; offset < stripOffsets.length; offset++){
 			log.append("Offset : "+offset);
@@ -273,7 +273,7 @@ public class GrayScaleImage extends BiLevelImage{
 				if( c == imageLength*imageWidth) break;
 				row = (int) (c / imageWidth);
 				col = (int) (c % imageWidth);
-				wr.setSample( col, row, 0,(buffer[0] & 0xff));
+				inputRaster.setSample( col, row, 0,(buffer[0] & 0xff));
 				//System.out.print(pixel[row][col]+" ");
 			}
 		}
@@ -294,8 +294,8 @@ public class GrayScaleImage extends BiLevelImage{
 		long	tilesDown;
 		long	tilesPerImage;
 		long	pixelsPerTile;
-		short[][] pixel = new short[(int) imageLength][(int)imageWidth];
-		WritableRaster wr = image.getRaster();
+//		short[][] pixel = new short[(int) imageLength][(int)imageWidth];
+		WritableRaster inputRaster = image.getRaster();
 		
 		tilesAcross 	= (imageWidth  + tileWidth  - 1 ) / tileWidth ;
 		tilesDown 		= (imageLength + tileLength - 1 ) / tileLength;
@@ -329,7 +329,7 @@ public class GrayScaleImage extends BiLevelImage{
 						if( ROW >= imageLength ){
 							continue;
 						}
-						wr.setSample( COL, ROW, 0, buffer[  (int) ( ( x * tileWidth) + y )]);
+						inputRaster.setSample( COL, ROW, 0, buffer[  (int) ( ( x * tileWidth) + y )]);
 //						pixel[ROW][COL] = buffer[ (int) (( x * tileWidth) + y)]; 
 //						System.out.println ( buffer[  x + ( tileLength * y)] );
 					}
@@ -346,31 +346,44 @@ public class GrayScaleImage extends BiLevelImage{
 		
 		return false;
 	}
-//	public void filter( double[][] mask, int size){
-//		short[][] output = new short[(int) imageLength][(int) imageWidth];
-//		int offset = (size-1)/2;
-//		for( int row = offset; row < imageLength - ( offset  ); row++){
-//			//System.out.println();
-//			for( int  col = offset; col < imageWidth - ( offset ); col++ ){
-//				//System.out.println("Column : "+col);
-//				//System.out.println("Row : "+pixel[row  ][col  ]);
-//				 
-//				double value =  (
-//			 					( pixel[row-1][col-1] * mask[0][0] ) +
-//			 					( pixel[row-1][col  ] * mask[0][1] ) +
-//			 					( pixel[row-1][col+1] * mask[0][2] ) +
-//			 					( pixel[row	 ][col-1] * mask[1][0] ) +
-//			 					( pixel[row  ][col  ] * mask[1][1] ) +
-//			 					( pixel[row  ][col+1] * mask[1][2] ) +
-//			 					( pixel[row+1][col-1] * mask[2][0] ) +
-//			 					( pixel[row+1][col  ] * mask[2][1] ) +
-//			 					( pixel[row+1][col+1] * mask[2][2] ) 
-//			 					);
-//				//System.out.print(value);
-//				output[row][col] = (short) value;
-//				//System.out.print(" <<"+output[row][col]+" ");
-//			}
-//		}
-//		pixel = output;
-//	}
+	public void filter( double[][] D2mask,boolean zero){
+		WritableRaster inputRaster  = image.getRaster();
+		WritableRaster outputRaster = inputRaster.createCompatibleWritableRaster();
+		
+		int width	= D2mask[0].length;
+		int length  = D2mask.length;	
+		int x 	= -width/2; 
+		int	y 	= -length/2;
+		int count = 0;
+		double value = 0;
+		double[] D1mask    = new double[width * length];
+		double[] window	   = new double[width * length];
+		
+		for( int row = 0; row < length; row++){
+			for( int col = 0; col < width; col++){
+				D1mask[count] = D2mask[row][col];
+				count++;
+			}
+		}
+		
+		for( int row = length/2; row < imageLength - ( length/2  ); row++){
+			for( int  col = width/2; col < imageWidth - ( width/2 ); col++ ){
+				if( zero ){
+					 
+				}else{
+					
+				}
+				for( int band = 0; band < inputRaster.getNumBands(); band++){
+					window = inputRaster.getSamples( x + col , y + row, width, length, band, window);
+					value = 0;
+					for( int loc = 0; loc < window.length; loc++ ){
+						value += ( window[loc] * D1mask[loc] );
+					}
+					outputRaster.setSample(col, row, band,value);
+				}
+			}
+		}
+		image.setData(outputRaster);
+	}
 }
+

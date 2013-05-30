@@ -226,8 +226,8 @@ public class RGBImage extends GrayScaleImage{
 			}
 		}
 		}catch(Exception e){
-			System.out.println("imageWidth : "+imageWidth+" imageLength :"+imageLength);
-			System.out.println("row : "+row+" col : "+col+" count : "+c);
+			log.append("imageWidth : "+imageWidth+" imageLength :"+imageLength);
+			log.append("row : "+row+" col : "+col+" count : "+c);
 			e.printStackTrace();
 		}
 		return true;
@@ -249,7 +249,7 @@ public class RGBImage extends GrayScaleImage{
 			
 			for(int count = 0 ; count < stripByteCounts[offset] ; count++,c++){
 				fstream.read(buffer);
-				//if( c % imageWidth == 0) System.out.println();
+				//if( c % imageWidth == 0) log.append();
 				if( c == imageLength*imageWidth) break;
 				row = (int) (c / imageWidth);
 				col = (int) (c % imageWidth);
@@ -258,8 +258,8 @@ public class RGBImage extends GrayScaleImage{
 			}
 		}
 		}catch(Exception e){
-			System.out.println("imageWidth : "+imageWidth+" imageLength :"+imageLength);
-			System.out.println("row : "+row+" col : "+col+" count : "+c);
+			log.append("imageWidth : "+imageWidth+" imageLength :"+imageLength);
+			log.append("row : "+row+" col : "+col+" count : "+c);
 			e.printStackTrace();
 		}
 		return false;
@@ -267,14 +267,10 @@ public class RGBImage extends GrayScaleImage{
 	public boolean readTiles( RandomAccessFile fstream){
 		
 		log.append( "Reading Pixels Data From Tiles " );
-		boolean flag1 = true;
-		boolean flag2 = true;
-		boolean flag3 = true;
 		long	tilesAcross;
 		long	tilesDown;
 		long	tilesPerImage;
 		long	pixelsPerTile;
-		short[][] pixel = new short[(int) imageLength][(int)imageWidth];
 		WritableRaster wr = image.getRaster();
 		
 		tilesAcross 	= (imageWidth  + tileWidth  - 1 ) / tileWidth ;
@@ -282,10 +278,10 @@ public class RGBImage extends GrayScaleImage{
 		tilesPerImage 	=  tilesAcross * tilesDown;
 		pixelsPerTile	=  tileWidth   * tileLength;
 		
-		log.append( "TA"+tilesAcross );
-		log.append( "TD"+tilesDown );
-		log.append( "TPI"+tilesPerImage );
-		log.append( "PPT"+pixelsPerTile );
+		log.append( "TilesAcross : "+tilesAcross );
+		log.append( "TilesDown : "+tilesDown );
+		log.append( "Tiles Per Image : "+tilesPerImage );
+		log.append( "Pixels Per Tile : "+pixelsPerTile );
 		
 		long	offset = 0;
 		int 	count = 0;
@@ -294,47 +290,20 @@ public class RGBImage extends GrayScaleImage{
 		try{
 		byte[] buffer 	 = new byte[(int) pixelsPerTile * samplesPerPixel];
 		int[]  pixelData = new int[3];
-//		int RED = 0,GREEN = (int) pixelsPerTile ,BLUE = (int) pixelsPerTile * 2;
 		
-		for( long row = 0; row < tilesDown && flag1 ; row++ ){
-			for( long col = 0; col < tilesAcross && flag1 ; col++ ){
+		for( long row = 0; row < tilesDown; row++ ){
+			for( long col = 0; col < tilesAcross; col++ ){
 				fstream.seek( tileOffsets[ (int) offset ]);
 				fstream.read( buffer );
-//				flag2 = true;
-//				flag3 = true;
-//				for( int y = 0; y < tileLength ; y++ ){
-//					for( int x = 0; x < tileWidth; x++){
-//						COL = (int) (x + (col * tileWidth ));
-//						ROW = (int) (y + (row * tileLength));
-//						if( COL >= imageWidth ){
-//							continue;
-//						}
-//						if( ROW >= imageLength ){
-//							continue;
-//						}
-////						wr.setSamples( COL, ROW, 0, buffer[  (int) ( ( x * tileWidth) + y )]);
-////						pixelData[2] = buffer[  (int) (  0  + ( (x*samplesPerPixel) * tileWidth) + y )];
-////						pixelData[1] = buffer[  (int) (  1  + ( (x*samplesPerPixel) * tileWidth) + y )];
-////						pixelData[0] = buffer[  (int) (  2	+ ( (x*samplesPerPixel) * tileWidth) + y )];
-//						
-//						pixelData[2] = buffer[  count];
-//						pixelData[1] = buffer[1+count];
-//						pixelData[0] = buffer[2+count];
-//						count +=3;
-//						wr.setPixel( COL, ROW, pixelData );
-////						pixel[ROW][COL] = buffer[ (int) (( x * tileWidth) + y)]; 
-//						System.out.println ("Pixel Index"+count);
-//					}
-//				}
 				for( count = 0;count < (pixelsPerTile*samplesPerPixel); count+=3){
 					ROW = (int) ((count/3) / (tileWidth));
 					ROW += (row * tileLength );	
 					COL = (int) ((count/3) % (tileWidth));
 					COL += (col * tileWidth );
-					if( ROW == imageLength || COL == imageWidth ) break;					
-					pixelData[2] = buffer[  count];
-					pixelData[1] = buffer[1+count];
-					pixelData[0] = buffer[2+count];
+					if( ROW >= imageLength || COL >= imageWidth ) continue;					
+					pixelData[2] = buffer[  count];	//RED
+					pixelData[1] = buffer[1+count]; //GREEN
+					pixelData[0] = buffer[2+count]; //BLUE
 					wr.setPixel( COL, ROW, pixelData );
 					
 				}
@@ -343,8 +312,8 @@ public class RGBImage extends GrayScaleImage{
 		}
 		}catch(Exception e){
 			log.append("Pixels Per Tile : "+pixelsPerTile);
-			System.out.println("tileWidth : "+tileWidth+" tileLength :"+tileLength);
-			System.out.println("row : "+ROW+" col : "+COL+" count : "+offset);
+			log.append("tileWidth : "+tileWidth+" tileLength :"+tileLength);
+			log.append("ROW : "+ROW+" COL : "+COL+" Count : "+offset);
 			e.printStackTrace();
 		}
 		

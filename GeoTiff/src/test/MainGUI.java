@@ -22,24 +22,43 @@ import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 
+import tiff.BaseLineImage;
 import tiff.baseline.GrayScaleImage;
 import tiff.baseline.RGBImage;
+import utils.LogCat;
 
 public class MainGUI{
+	static LogCat log = new LogCat();
 	static File  in;
 	static String            in_path;
 	static BufferedImage     bin;
+	static BaseLineImage img;
 	static JFrame jf;
 	static TiffCanvas canvas;
 	static final JFileChooser fc  = new JFileChooser();
 	static Polygon selectedBoundry;
 	static boolean select;
-	
+	static double[][] highpass = { 
+			{ 1,  1, 1}
+		   ,{ 1, -8, 1}
+		   ,{ 1,  1, 1}
+		  };
+	static double[][] lowpass = { 
+		{ 1.0/9,  1.0/9, 1.0/9}
+	   ,{ 1.0/9,  1.0/9, 1.0/9}
+	   ,{ 1.0/9,  1.0/9, 1.0/9}
+	  };
+	static double[][] identity = { 
+			{ 0,  0, 0}
+		   ,{ 0,  1, 0}
+		   ,{ 0,  0, 0}
+		};
 	public static void openImage(String path) throws FileNotFoundException, IOException{
 		in_path = path;
 		in  = new File(in_path);		
 //		GrayScaleImage gi = new GrayScaleImage( in );//to open GrayScale Image
 		RGBImage gi = new RGBImage( in ) ; // top open RGBImage 
+		img = gi;
 		bin  = gi.getImage();
 		canvas.drawImage( bin );
 		jf.setSize( new Dimension( bin.getWidth(),bin.getHeight()+ 20 ) );
@@ -104,7 +123,7 @@ public class MainGUI{
 		
 		jf.add("Center" , canvas);
 		
-		jp.setLayout(new GridLayout(1,2));
+		jp.setLayout(new GridLayout(1,5));
 		
 		JButton openBtn = new JButton("OPEN");
 		openBtn.setSize( 20, 40);
@@ -149,11 +168,66 @@ public class MainGUI{
 			}
 		});
 		selectBtn.setSize( 20, 40);
+		
+		JButton highpassBtn = new JButton("HighPass");
+		highpassBtn.addActionListener(new ActionListener(){
+			public void actionPerformed(ActionEvent ae){
+				log.append( ""+img.getClass() );
+				if( img.getClass() == RGBImage.class ){
+					RGBImage rgbImage = (RGBImage)img;
+					rgbImage.filter( highpass, false);
+					canvas.repaint();
+				}else if( img.getClass() == GrayScaleImage.class){
+					GrayScaleImage grayImage = (GrayScaleImage)img;
+					grayImage.filter( highpass, false);
+					canvas.repaint();
+				}
+			}
+		});
+		highpassBtn.setSize( 20, 40);
+		
+		JButton identityBtn = new JButton("Identity");
+		identityBtn.addActionListener(new ActionListener(){
+			public void actionPerformed(ActionEvent ae){
+				log.append( ""+img.getClass() );
+				if( img.getClass() == RGBImage.class ){
+					RGBImage rgbImage = (RGBImage)img;
+					rgbImage.filter( identity, false);
+					canvas.repaint();
+				}else if( img.getClass() == GrayScaleImage.class){
+					GrayScaleImage grayImage = (GrayScaleImage)img;
+					grayImage.filter( identity, false);
+					canvas.repaint();
+				}
+			}
+		});
+		identityBtn.setSize( 20, 40);
+		
+		JButton lowpassBtn = new JButton("LowPass");
+		lowpassBtn.addActionListener(new ActionListener(){
+			public void actionPerformed(ActionEvent ae){
+				log.append( ""+img.getClass() );
+				if( img.getClass() == RGBImage.class ){
+					RGBImage rgbImage = (RGBImage)img;
+					rgbImage.filter( lowpass, false);
+					canvas.repaint();
+				}else if( img.getClass() == GrayScaleImage.class){
+					GrayScaleImage grayImage = (GrayScaleImage)img;
+					grayImage.filter( lowpass, false);
+					canvas.repaint();
+				}
+			}
+		});
+		lowpassBtn.setSize( 20, 40);
+		
 		jp.add(openBtn);
 		jp.add(selectBtn);
+		jp.add(identityBtn);
+		jp.add(highpassBtn);
+		jp.add(lowpassBtn);
 		
 		jf.add(BorderLayout.NORTH, jp);
-		jf.setSize( new Dimension( 200, 60 ));
+		jf.setSize( new Dimension( 200, 200 ));
 		jf.setVisible( true );
 	}
 }
