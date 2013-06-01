@@ -2,10 +2,12 @@ package test;
 
 import java.awt.BorderLayout;
 import java.awt.Canvas;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.GridLayout;
 import java.awt.Polygon;
+import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
@@ -36,7 +38,7 @@ public class MainGUI{
 	static JFrame jf;
 	static TiffCanvas canvas;
 	static final JFileChooser fc  = new JFileChooser();
-	static Polygon selectedBoundry;
+	static Object selectedBoundry;
 	static boolean select;
 	static double[][] highpass = { 
 			{ 1,  1, 1}
@@ -61,6 +63,7 @@ public class MainGUI{
 		img = gi;
 		bin  = gi.getImage();
 		canvas.drawImage( bin );
+		selectedBoundry = new Rectangle(0, 0, bin.getWidth(),bin.getHeight()); 
 		jf.setSize( new Dimension( bin.getWidth(),bin.getHeight()+ 20 ) );
 	}
 	public static void main(String args[]){
@@ -92,14 +95,14 @@ public class MainGUI{
 				// TODO Auto-generated method stub
 				if(select){		
 					selectedBoundry = new Polygon();
-					selectedBoundry.addPoint( me.getX() , me.getY());
+					((Polygon) selectedBoundry).addPoint( me.getX() , me.getY());
 				}
 			}
 
 			@Override
 			public void mouseReleased(MouseEvent me) {
 				// TODO Auto-generated method stub
-				if(select)	canvas.getGraphics().drawPolygon( selectedBoundry );
+				if(select)	canvas.getGraphics().drawPolygon( (Polygon) selectedBoundry );
 				select = false;
 				//canvas.repaint();
 			}
@@ -110,7 +113,7 @@ public class MainGUI{
 			@Override
 			public void mouseDragged(MouseEvent me) {
 				// TODO Auto-generated method stub
-				if(select) selectedBoundry.addPoint( me.getX() , me.getY());
+				if(select) ((Polygon) selectedBoundry).addPoint( me.getX() , me.getY());
 			}
 
 			@Override
@@ -159,11 +162,23 @@ public class MainGUI{
 				select = true;
 				
 				if( selectedBoundry != null ){
-					canvas.repaint( selectedBoundry.getBounds().x,
-							selectedBoundry.getBounds().y,
-							selectedBoundry.getBounds().width+1,
-							selectedBoundry.getBounds().height+1);
-					selectedBoundry = null;
+					if( selectedBoundry.getClass() == Polygon.class){
+						canvas.repaint(
+							((Polygon)selectedBoundry).getBounds().x,
+							((Polygon)selectedBoundry).getBounds().y,
+							((Polygon)selectedBoundry).getBounds().width+1,
+							((Polygon)selectedBoundry).getBounds().height+1
+							);
+					}
+					if( selectedBoundry.getClass() == Rectangle.class ){
+						canvas.repaint( 
+							((Rectangle)selectedBoundry).getBounds().x,
+							((Rectangle)selectedBoundry).getBounds().y,
+							((Rectangle)selectedBoundry).getBounds().width+1,
+							((Rectangle)selectedBoundry).getBounds().height+1
+							);
+					}
+					selectedBoundry = new Rectangle( 0, 0, bin.getWidth(),bin.getHeight());
 				}
 			}
 		});
@@ -175,11 +190,21 @@ public class MainGUI{
 				log.append( ""+img.getClass() );
 				if( img.getClass() == RGBImage.class ){
 					RGBImage rgbImage = (RGBImage)img;
-					rgbImage.filter( highpass, false);
+					if( selectedBoundry.getClass() == Rectangle.class ){
+						rgbImage.filter( (Rectangle) selectedBoundry, highpass, false);
+					}
+					if( selectedBoundry.getClass() == Polygon.class ){
+						rgbImage.filter( (Polygon) selectedBoundry, highpass, false);
+					}
 					canvas.repaint();
 				}else if( img.getClass() == GrayScaleImage.class){
 					GrayScaleImage grayImage = (GrayScaleImage)img;
-					grayImage.filter( highpass, false);
+					if( selectedBoundry.getClass() == Rectangle.class ){
+						grayImage.filter( (Rectangle) selectedBoundry, highpass, false);
+					}
+					if( selectedBoundry.getClass() == Polygon.class ){
+						grayImage.filter( (Polygon) selectedBoundry, highpass, false);
+					}
 					canvas.repaint();
 				}
 			}
@@ -192,11 +217,11 @@ public class MainGUI{
 				log.append( ""+img.getClass() );
 				if( img.getClass() == RGBImage.class ){
 					RGBImage rgbImage = (RGBImage)img;
-					rgbImage.filter( identity, false);
+					rgbImage.filter( (Rectangle) selectedBoundry,identity, false);
 					canvas.repaint();
 				}else if( img.getClass() == GrayScaleImage.class){
 					GrayScaleImage grayImage = (GrayScaleImage)img;
-					grayImage.filter( identity, false);
+					grayImage.filter( (Rectangle) selectedBoundry,identity, false);
 					canvas.repaint();
 				}
 			}
@@ -209,11 +234,11 @@ public class MainGUI{
 				log.append( ""+img.getClass() );
 				if( img.getClass() == RGBImage.class ){
 					RGBImage rgbImage = (RGBImage)img;
-					rgbImage.filter( lowpass, false);
+					rgbImage.filter( (Rectangle) selectedBoundry,lowpass, false);
 					canvas.repaint();
 				}else if( img.getClass() == GrayScaleImage.class){
 					GrayScaleImage grayImage = (GrayScaleImage)img;
-					grayImage.filter( lowpass, false);
+					grayImage.filter( (Rectangle) selectedBoundry,lowpass, false);
 					canvas.repaint();
 				}
 			}

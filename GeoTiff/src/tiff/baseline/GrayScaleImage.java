@@ -1,5 +1,8 @@
 package tiff.baseline;
 
+import java.awt.Point;
+import java.awt.Polygon;
+import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 import java.awt.image.WritableRaster;
 import java.io.File;
@@ -18,8 +21,8 @@ public class GrayScaleImage extends BiLevelImage{
 	//	Allowable values for Baseline TIFF grayscale images are 4  and 8 , allowing either
 	//	16 or 256 distinct shades of gray.
 	public GrayScaleImage(){}
-	public GrayScaleImage(File input) throws FileNotFoundException, IOException {
-		RandomAccessFile fstream = new RandomAccessFile( input, "rw" );
+	public GrayScaleImage(File in) throws FileNotFoundException, IOException {
+		RandomAccessFile fstream = new RandomAccessFile( in, "rw" );
 		decode( fstream );
 		image = new BufferedImage(	(int) imageWidth,
 									(int) imageLength,
@@ -346,7 +349,7 @@ public class GrayScaleImage extends BiLevelImage{
 		
 		return false;
 	}
-	public void filter( double[][] D2mask,boolean zero){
+	public void filter( Rectangle selectedBoundry,double[][] D2mask,boolean zero){
 		WritableRaster inputRaster  = image.getRaster();
 		WritableRaster outputRaster = inputRaster.createCompatibleWritableRaster();
 		
@@ -358,6 +361,10 @@ public class GrayScaleImage extends BiLevelImage{
 		double value = 0;
 		double[] D1mask    = new double[width * length];
 		double[] window	   = new double[width * length];
+		int xx = 0;
+		int yy = 0;
+		int ww = 0;
+		int ll = 0;
 		
 		for( int row = 0; row < length; row++){
 			for( int col = 0; col < width; col++){
@@ -365,16 +372,61 @@ public class GrayScaleImage extends BiLevelImage{
 				count++;
 			}
 		}
+		for( int row = selectedBoundry.y + length/2; row < selectedBoundry.y + selectedBoundry.height - length/2; row++){
+			for( int  col = selectedBoundry.x + width/2; col < selectedBoundry.x + selectedBoundry.width - width/2; col++ ){
+				for( int band = 0; band < inputRaster.getNumBands(); band++){
+					xx = x + col;
+					yy = y + row;
+					ww = width;
+					ll = length;
+					window = inputRaster.getSamples( xx , yy, ww, ll, band, window);
+					value = 0;
+					for( int loc = 0; loc < window.length; loc++ ){
+						value += ( window[loc] * D1mask[loc] );
+					}
+					outputRaster.setSample(col, row, band,value);
+				}
+			}
+		}
+		image.setData(outputRaster);
+	}
+	public void filter( Polygon selectedBoundry,double[][] D2mask,boolean zero){
+		WritableRaster inputRaster  = image.getRaster();
+		WritableRaster outputRaster = inputRaster.createCompatibleWritableRaster();
 		
-		for( int row = length/2; row < imageLength - ( length/2  ); row++){
-			for( int  col = width/2; col < imageWidth - ( width/2 ); col++ ){
-				if( zero ){
-					 
-				}else{
-					
+		int width	= D2mask[0].length;
+		int length  = D2mask.length;	
+		int x 	= -width/2; 
+		int	y 	= -length/2;
+		int count = 0;
+		double value = 0;
+		double[] D1mask    = new double[width * length];
+		double[] window	   = new double[width * length];
+		int xx = 0;
+		int yy = 0;
+		int ww = 0;
+		int ll = 0;
+		
+		for( int row = 0; row < length; row++){
+			for( int col = 0; col < width; col++){
+				D1mask[count] = D2mask[row][col];
+				count++;
+			}
+		}
+		for( int row = selectedBoundry.getBounds().y + length/2; row < selectedBoundry.getBounds().y + selectedBoundry.getBounds().height - length/2; row++){
+			for( int  col = selectedBoundry.getBounds().x + width/2; col < selectedBoundry.getBounds().x + selectedBoundry.getBounds().width - width/2; col++ ){
+				if( !selectedBoundry.contains( new Point(row,col))){
+					for( int band = 0; band < inputRaster.getNumBands(); band++ ){
+						outputRaster.setSample( col, row, band, inputRaster.getSample( col, row, band));
+					}
+					continue;
 				}
 				for( int band = 0; band < inputRaster.getNumBands(); band++){
-					window = inputRaster.getSamples( x + col , y + row, width, length, band, window);
+					xx = x + col;
+					yy = y + row;
+					ww = width;
+					ll = length;
+					window = inputRaster.getSamples( xx , yy, ww, ll, band, window);
 					value = 0;
 					for( int loc = 0; loc < window.length; loc++ ){
 						value += ( window[loc] * D1mask[loc] );

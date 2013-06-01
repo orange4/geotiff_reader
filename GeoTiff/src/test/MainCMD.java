@@ -30,11 +30,11 @@ public class MainCMD {
 		GrayScaleImage gi = new GrayScaleImage( in );
 //		gi.decode( in );
 //		gi.readPixels( in );
+////		
+//		gi.filter(lowpass, true);
+//		gi.filter(lowpass, true);
 //		
-		gi.filter(lowpass, true);
-		gi.filter(lowpass, true);
-		
-		gi.filter(highpass,true);
+//		gi.filter(highpass,true);
 		
 //		gi.writePixels( out );
 	}
