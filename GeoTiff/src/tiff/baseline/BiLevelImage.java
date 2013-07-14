@@ -1,5 +1,6 @@
 package tiff.baseline;
 
+import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 import java.awt.image.WritableRaster;
 import java.io.File;
@@ -257,6 +258,10 @@ public class BiLevelImage extends BaseLineImage{
 		//	encode Method Write Tiff Image to File
 		public boolean encode(File output){
 			return false;
+		}
+		public Rectangle getBounds(){
+			log.append(imageLength+" "+imageWidth);
+			return new Rectangle((int)imageLength,(int)imageWidth);
 		}
 			
 }

@@ -301,9 +301,9 @@ public class RGBImage extends GrayScaleImage{
 					COL = (int) ((count/3) % (tileWidth));
 					COL += (col * tileWidth );
 					if( ROW >= imageLength || COL >= imageWidth ) continue;					
-					pixelData[2] = buffer[  count];	//RED
+					pixelData[0] = buffer[  count];	//RED
 					pixelData[1] = buffer[1+count]; //GREEN
-					pixelData[0] = buffer[2+count]; //BLUE
+					pixelData[2] = buffer[2+count]; //BLUE
 					wr.setPixel( COL, ROW, pixelData );
 					
 				}

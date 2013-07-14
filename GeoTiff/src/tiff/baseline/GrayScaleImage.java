@@ -349,7 +349,7 @@ public class GrayScaleImage extends BiLevelImage{
 		
 		return false;
 	}
-	public void filter( Rectangle selectedBoundry,double[][] D2mask,boolean zero){
+	public WritableRaster filter( Rectangle selectedBoundry,double[][] D2mask,boolean zero){
 		WritableRaster inputRaster  = image.getRaster();
 		WritableRaster outputRaster = inputRaster.createCompatibleWritableRaster();
 		
@@ -372,13 +372,15 @@ public class GrayScaleImage extends BiLevelImage{
 				count++;
 			}
 		}
-		for( int row = selectedBoundry.y + length/2; row < selectedBoundry.y + selectedBoundry.height - length/2; row++){
-			for( int  col = selectedBoundry.x + width/2; col < selectedBoundry.x + selectedBoundry.width - width/2; col++ ){
+		for( int row = selectedBoundry.y + length; row < selectedBoundry.y + selectedBoundry.height - length; row++){
+			for( int  col = selectedBoundry.x + width; col < selectedBoundry.x + selectedBoundry.width - width; col++ ){
 				for( int band = 0; band < inputRaster.getNumBands(); band++){
 					xx = x + col;
 					yy = y + row;
 					ww = width;
 					ll = length;
+					log.append("Array"+xx+" "+yy+" "+ww+" "+ll);
+					if( xx+ww > imageWidth || yy+ll > imageLength ) continue;
 					window = inputRaster.getSamples( xx , yy, ww, ll, band, window);
 					value = 0;
 					for( int loc = 0; loc < window.length; loc++ ){
@@ -388,9 +390,10 @@ public class GrayScaleImage extends BiLevelImage{
 				}
 			}
 		}
-		image.setData(outputRaster);
+		//image.setData(outputRaster);
+		return outputRaster;//Return Filtered Result Image Pixels
 	}
-	public void filter( Polygon selectedBoundry,double[][] D2mask,boolean zero){
+	public WritableRaster filter( Polygon selectedBoundry,double[][] D2mask,boolean zero){
 		WritableRaster inputRaster  = image.getRaster();
 		WritableRaster outputRaster = inputRaster.createCompatibleWritableRaster();
 		
@@ -417,6 +420,7 @@ public class GrayScaleImage extends BiLevelImage{
 			for( int  col = selectedBoundry.getBounds().x + width/2; col < selectedBoundry.getBounds().x + selectedBoundry.getBounds().width - width/2; col++ ){
 				if( !selectedBoundry.contains( new Point(row,col))){
 					for( int band = 0; band < inputRaster.getNumBands(); band++ ){
+//						System.out.println( "Col : " + col + "Row : " + row );
 						outputRaster.setSample( col, row, band, inputRaster.getSample( col, row, band));
 					}
 					continue;
@@ -435,7 +439,8 @@ public class GrayScaleImage extends BiLevelImage{
 				}
 			}
 		}
-		image.setData(outputRaster);
+		//image.setData(outputRaster);
+		return outputRaster;//Return Filtered Result Image Pixels
 	}
 }
 
